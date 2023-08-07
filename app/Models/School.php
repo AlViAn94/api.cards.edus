@@ -6,8 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use GuzzleHttp\Client;
 
-class school extends Model
+class School extends Model
 {
+    protected $table = 'mektepter';
     public static function getSchoolAll(){
 
         $client = new Client();
