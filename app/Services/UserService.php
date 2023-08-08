@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\Users;
-use App\Models\School;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use App\Models\Teacher;
 use App\Models\Personal;
+use App\Models\Teacher;
+use App\Models\School;
+use App\Models\Users;
 class UserService
 {
 public function saveNewUser($data){

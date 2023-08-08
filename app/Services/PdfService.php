@@ -2,86 +2,28 @@
 
 namespace App\Services;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\GenerateCardController;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 use App\Services\UserService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Mpdf;
 use App\Models\Users;
-use Illuminate\Support\Facades\File;
 use ZipArchive;
+use Mpdf;
 
 class PdfService
 {
-    protected $UserService;
+    protected $userService;
 
-    protected $GenerateCardController;
+    protected $generateCardController;
 
-    public function __construct(UserService $UserService, GenerateCardController $GenerateCardController)
+    public function __construct(UserService $userService, GenerateCardController $generateCardController)
     {
-        $this->UserService = $UserService;
-        $this->GenerateCardController = $GenerateCardController;
+        $this->UserService = $userService;
+        $this->GenerateCardController = $generateCardController;
     }
-    public function cardUpdateAndSave(Request $request) {
 
-// Получаем данные студента
-
-        $studentQuery = DB::connection('mektep_edu')->table('mektep_students')
-            ->select('id', 'surname', 'name', 'id_mektep', 'iin', 'lastname', 'birthday', 'pol', 'national', 'id_class', 'parent_ata_id', 'parent_ana_id')
-            ->selectRaw('MD5(iin) as iin_md5');
-
-        if($request->iin) {
-            $studentQuery->where('iin', $request->iin);
-        } else {
-            $studentQuery->where('id', $request->id);
-        }
-        $data = $studentQuery->first();
-
-        $student = json_decode(json_encode($data), true);
-        $student['position'] = $request->position;
-        $student['paid'] = '1';
-
-        if ( !$student ) {
-            return response()->json([
-                "message" => "Студент не найден"
-            ], 404);
-        }
-
-// Получаем последнюю активную карту
-
-        $user_cards_query = DB::table("cards_ready")
-            ->select('id', 'full_name', 'user_id', 'card_number', 'nfc', 'mektep_id', 'is_active', 'created_at')
-            ->where('iin', '=' , $request->iin)
-            ->where('is_active', '=' , '1')
-            ->get();
-
-        $cardNumber = $user_cards_query->pluck('card_number')->first();
-
-//  Меняем статус актив на 0
-
-        $student_card = $user_cards_query->where('card_number', '=', $cardNumber)->first();
-
-        if($student_card) {
-            DB::table("cards_ready")
-                ->where('is_active', '=', 1)
-                ->where('card_number', '=', $cardNumber)
-                ->update(["is_active" => 0]);
-        }
-        else {
-            return response()->json([
-                "message" => "Карточка не найдена"
-            ], 404);
-        }
-
-//  Запись новой карты
-
-        $last = $this->getLastNum();
-        $card_number = $last == null?2010000:$last->card_number+1;
-        $this->createNewCard($card_number, $student, $student['position']);
-
-        return $student;
-    }
     public function createNewCard($card_number, $student, $position){
 
         $card_insert_id = DB::table('cards_ready')->insertGetId([

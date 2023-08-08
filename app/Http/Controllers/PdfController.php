@@ -3,22 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use App\Jobs\PdfEmptyCards;
 use App\Services\UserService;
 use App\Services\PdfService;
+use Illuminate\Http\Request;
+use App\Jobs\PdfEmptyCards;
 
 class PdfController extends Controller
 {
-    protected $UserService;
+    protected $userService;
     
-    protected $PdfService;
+    protected $pdfService;
 
-    public function __construct(UserService $UserService, PdfService $PdfService)
+    public function __construct(UserService $userService, PdfService $pdfService)
     {
-        $this->UserService = $UserService;
-        $this->PdfService = $PdfService;
+        $this->UserService = $userService;
+        $this->PdfService = $pdfService;
     }
     public function index(Request $request){
 
@@ -29,17 +29,6 @@ class PdfController extends Controller
         }
         PdfEmptyCards::dispatch($start, $end);
         return $request->all();
-    }
-
-    // Создаём новую карту
-    public function actionSaveNewCard(Request $request){
-        
-        $processedData = $this->PdfService->cardUpdateAndSave($request);
-
-        // Сохраняем нового пользователя или перезаписываем и увеличиваем перевыпуск на 1
-        $this->UserService->saveNewUser($processedData);
-
-        return response()->json(['massage' => $processedData]);
     }
 
     public function actionMassGeneratedSave(Request $request){
