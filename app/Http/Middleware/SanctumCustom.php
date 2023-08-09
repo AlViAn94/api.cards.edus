@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use Closure;
 use Illuminate\Http\Request;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful as Middleware;
 
@@ -16,6 +15,9 @@ class SanctumCustom extends Middleware
      */
     protected function getToken(Request $request)
     {
+        if (!$request->header('X-Auth-Token')) {
+        return route('login');
+    }
         return $request->header('X-Auth-Token');
     }
 }

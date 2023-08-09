@@ -95,8 +95,18 @@ public function saveNewUser($data){
             'parent_ata_id',
             'parent_ana_id'
         ]);
-
+// если перевыпуск карты
         $data['status'] = 1;
+
+// Если первичный выпуск ( до делать )
+        $result = DB::table('cards_ready')
+            ->where('iin', '=', $data['iin'])
+            ->first();
+        if(!$result){
+            $data['perevipusk'] = 0;
+        }
+
+
         $data['curdate'] = date('Y-m-d H:i:s');
 // Сохраняем название класса
         if($data['position'] == 'student'){
@@ -139,16 +149,26 @@ public function saveNewUser($data){
         // Проверка есть ли в базе такой пользователь
         $student = Users::where('iin', $data['iin'])->first();
 
-// Если пользователь существует, увеличиваем значение поля "perevipusk" на 1
 
         if ($student) {
+            // Если уже в обработке
+            if($student->status == 1){
+                return response()->json(['error' => "Пользователь уже подал заявку и находится на этапе генерации"], 409);
+            }
             // Обновляем запись в базе данных или создаем новую запись
             Users::updateOrCreate(['iin' => $data['iin']], $data);
 
-            $student->increment('perevipusk');
+            // Если пользователь существует, увеличиваем значение поля "perevipusk" на 1
+            if(isset($result)){
+                $student->increment('perevipusk');
+            }
+
+
+
             $student->save();
 
-            return response()->json(['access' => "Перезапись прошла успешно! Количество перевыпусков: $student->perevipusk"], 200);
+            return response()->json(['access' => "Перезапись прошла успешно!",
+                                        'perevipusk'=> $student->perevipusk], 200);
         }
 
         if(empty($student)) {

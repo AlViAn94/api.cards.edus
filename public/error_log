@@ -94,3 +94,5 @@
 [04-Aug-2023 16:16:25 UTC] PHP Fatal error:  Allowed memory size of 134217728 bytes exhausted (tried to allocate 117444608 bytes) in /home/cardsedus/public_html/api.cards.edus.kz/app/Http/Controllers/PdfController.php on line 56
 [04-Aug-2023 16:16:42 UTC] PHP Fatal error:  Allowed memory size of 134217728 bytes exhausted (tried to allocate 117444608 bytes) in /home/cardsedus/public_html/api.cards.edus.kz/app/Http/Controllers/PdfController.php on line 56
 [04-Aug-2023 16:16:56 UTC] PHP Fatal error:  Allowed memory size of 134217728 bytes exhausted (tried to allocate 117444608 bytes) in /home/cardsedus/public_html/api.cards.edus.kz/app/Http/Controllers/PdfController.php on line 56
+[08-Aug-2023 09:21:50 UTC] PHP Fatal error:  Allowed memory size of 134217728 bytes exhausted (tried to allocate 91218008 bytes) in /home/cardsedus/public_html/api.cards.edus.kz/app/Services/PdfService.php on line 94
+[08-Aug-2023 11:36:14 UTC] PHP Fatal error:  Allowed memory size of 134217728 bytes exhausted (tried to allocate 97723992 bytes) in /home/cardsedus/public_html/api.cards.edus.kz/app/Http/Controllers/CardController.php on line 55

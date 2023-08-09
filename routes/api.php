@@ -24,13 +24,14 @@ use App\Services\PdfService;
 //Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //    return $request->user();
 //});
+
 Route::controller(AuthController::class)
     ->group(function (){
         Route::post('login', 'login');
         Route::get('logout', 'logout');
     });
 
-Route::group(['middleware' => 'sanctumCustom'], function (){
+//Route::group(['middleware' => 'sanctumCustom'], function (){
 
     // Временный роут, удалить на продакшене
     Route::get('status/one', [UserController::class, 'actionStatusOne']);
@@ -65,7 +66,7 @@ Route::middleware([HandleCors::class])->group(function () {
             Route::get('statistic/{period}', "actionGetNewStatistic");
             Route::get('accepted/{period}', "actionGetStatistic");
         });
-});
+//});
 
 
 

@@ -20,7 +20,12 @@ class CardController extends Controller
         $cardData = DB::table('cards_ready')
             ->where('card_number', $request->card_number)
             ->first();
-
+        
+        if ($cardData->nfc){
+            return response()->json([
+                "message" => "Старая карта!"
+            ], 400);
+        }
         if ($cardData) {
             DB::table('cards_ready')
                 ->where('card_number', $request->card_number)
@@ -33,7 +38,6 @@ class CardController extends Controller
             $student = Users::where('iin', $cardData->iin)->first();
 
             if ($student) {
-                // Обновим столбец 'status' на значение 2
                 $student->update(['status' => 3]);
             }else{
                 return response()->json([
@@ -50,7 +54,16 @@ class CardController extends Controller
     public function actionStudentName(Request $request){
 
         if ($request->card_number != null) {
-            $query = DB::table('cards_ready')->select("full_name", "nfc")->where("card_number", "=", $request->card_number)->first();
+            $query = DB::table('cards_ready')->select("full_name", "nfc", 'iin')->where("card_number", "=", $request->card_number)->first();
+
+            $status = Users::where('iin', '=', $query->iin)->select('status')->first();
+
+            $result = $status->status;
+
+            //Если
+            if($result == '1' || $result == '3' || $result == '4'){
+                return response(['error' => 'Сгенерируйте карту!'], 400);
+            }
         }else{
             return response('Номер карты не найдена', 403);
         }

@@ -76,9 +76,25 @@ class PdfService
     public function saveNewCardMass($model){
 
         foreach ($model as $studentData) {
-            $studentQuery = DB::connection('mektep_edu')->table('mektep_students')
-                ->select('id', 'surname', 'name', 'id_mektep', 'iin', 'lastname', 'birthday', 'pol', 'national', 'id_class', 'parent_ata_id', 'parent_ana_id')
-                ->selectRaw('MD5(iin) as iin_md5');
+            switch ($studentData['position']){
+                case 'student':
+                    $studentQuery = DB::connection('mektep_edu')->table('mektep_students')
+                        ->select('id', 'surname', 'name', 'id_mektep', 'iin', 'lastname', 'birthday', 'pol', 'national', 'parent_ata_id', 'parent_ana_id')
+                        ->selectRaw('MD5(iin) as iin_md5');
+                break;
+                case 'teacher':
+                    $studentQuery = DB::connection('mektep_edu')->table('mektep_teacher')
+                        ->select('id', 'surname', 'name', 'id_mektep', 'iin', 'lastname', 'birthday', 'pol')
+                        ->selectRaw('MD5(iin) as iin_md5');
+                    break;
+                case 'personal':
+                    $studentQuery = DB::connection('mektep_edu')->table('mektep_personal')
+                        ->select('id', 'surname', 'name', 'id_mektep', 'iin', 'lastname', 'birthday', 'pol')
+                        ->selectRaw('MD5(iin) as iin_md5');
+                    break;
+            }
+
+
 
             if($studentData['iin']) {
 
@@ -114,8 +130,18 @@ class PdfService
 
             $cardNumber = $user_cards_query->pluck('card_number')->first();
 
-//  Меняем статус актив на 0
+// Если нет карты
+            if(empty($user_cards_query['0'])){
+                $last = $this->getLastNum();
+                $card_number = $last == null?2010000:$last->card_number+1;
+                $this->createNewCard($card_number, $student, $student['position']);
+                
+                return response()->json([
+                    "message" => "Генерация карточек успешно завершена!"
+                ], 200);
+            }
 
+//  Меняем статус актив на 0
             $student_card = $user_cards_query->where('card_number', '=', $cardNumber)->first();
 
             if($student_card) {
@@ -124,11 +150,6 @@ class PdfService
                     ->where('card_number', '=', $cardNumber)
                     ->update(["is_active" => 0]);
             }
-            else {
-                return response()->json([
-                    "message" => "Карточка не найдена"
-                ], 404);
-            }
 
             $last = $this->getLastNum();
             $card_number = $last == null?2010000:$last->card_number+1;
@@ -136,7 +157,7 @@ class PdfService
         }
 
         return response()->json([
-            "message" => "Массовая генерация карточек успешно завершена!"
+            "message" => "Генерация карточек успешно завершена!"
         ], 200);
     }
 
@@ -171,7 +192,7 @@ class PdfService
 
                 return response()->json(['error' => 'Архив не создан!'], 400);
             }
-
+// Массовая генерация
             foreach ($data as $k) {
 
                 $result = $this->mpdfCreated($k);
